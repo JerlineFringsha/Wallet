@@ -30,6 +30,16 @@ app.get("/", (req, res) => {
     res.send("Hello World!");
 });
 
+app.get("/api/transactions/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const transactions = await sql`SELECT * FROM transactions WHERE user_id = ${userId} ORDER BY created_at DESC`;
+    res.json(transactions);
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 app.post("/api/transactions", async (req, res) => {
   try {
     const { user_id, title, amount, category } = req.body;

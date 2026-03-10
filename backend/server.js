@@ -24,13 +24,28 @@ async function initDB(){
     }
 
 }
+app.use(express.json());
 
 app.get("/", (req, res) => {
     res.send("Hello World!");
 });
 
-initDB().then(()=>{
-    app.listen(PORT, () => {
-    console.log(`Server started on port ${PORT}`);
+app.post("/api/transactions", async (req, res) => {
+  try {
+    const { user_id, title, amount, category } = req.body;
+    if (!user_id || !title || !amount || !category) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+    const transaction =
+      await sql`INSERT INTO transactions (user_id, title, amount, category) VALUES (${user_id}, ${title}, ${amount}, ${category}) RETURNING *`;    res.status(201).json(transaction[0]);
+  } catch (error) {
+    console.error("Error creating transaction:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
-})
+
+initDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server started on port ${PORT}`);
+  });
+});
